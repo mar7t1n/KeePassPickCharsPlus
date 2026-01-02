@@ -1,0 +1,6 @@
+# Ignore library folder
+lib/
+
+# Ignore build artifacts
+bin/
+obj/
