@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Web Developer Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeePassPickCharsPlus", "KeePassPickCharsPlus.csproj", "{32855A71-5BA6-4CCB-BE83-9A0C93E9A4EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeePassPickCharsPlus", "src/KeePassPickCharsPlus.csproj", "{32855A71-5BA6-4CCB-BE83-9A0C93E9A4EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

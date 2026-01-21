@@ -13,18 +13,34 @@ If you’ve ever had to count along a password to work out the 5th and 9th chara
 [Download the latest release](https://github.com/mar71n/KeePass-Pick-Chars-Plus/releases)
 
 1. Ensure you are using **KeePass 2.x**
-2. Copy `PickCharsPlus.dll` into the KeePass installation directory (where `KeePass.exe` is located), or into a subdirectory of it
+2. Copy `PickCharsPlus.dll` into the KeePass Plugin installation directory (where `KeePass.exe` is located)
 3. Restart KeePass to load the plugin
+
+---
+
+## Setup
+
+1. Just set your password as normal
+2. Add any values you want to the standard - Password Entry > Advanced > String Fields tab. 
+
+You might use the 2nd option when a service asks you to log your Best Freinds surname, First Car Reg and then later ask for random characters from these at login.
 
 ---
 
 ## Usage
 
-1. Right-click an entry to open its context menu  
-2. Click **Pick Chars Plus**  
-3. In the window that appears, select the secure string you want to use (Password or Advanced String field)  
-4. Click the button(s) corresponding to the character positions you need  
+1a. Right-click an entry to open its context menu.
+1b. |OR| In the Password Entry Dialogue, click the **TOOLS** button.
+2. Click **Pick Chars Plus+** menu item 
+3. In the window that appears, select the secure string you want to use (Password or one of your Advanced String fields)
+4. Click the button(s) corresponding to the character positions you need.
+5. Read off the character or see the phonetics shown.
 
    ![](./doc/Screenshot1.jpg)
 
-5. When finished, close the window or press **ESC**
+6. When finished, close the window or press **ESC**
+
+
+## Changelog
+
+v1.1 - Adds the Menu item to the Entry TOOLS button.

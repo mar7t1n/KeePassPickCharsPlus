@@ -36,7 +36,8 @@ namespace PickCharsPlus
             _output = new Label { Location = new Point(10, 50), AutoSize = true };
             Controls.Add(_output);
 
-            _buttonsPanel = new FlowLayoutPanel {  
+            _buttonsPanel = new FlowLayoutPanel
+            {
                 Location = new Point(10, 80),
                 Width = ClientSize.Width - 20,
                 Height = ClientSize.Height - 80,
