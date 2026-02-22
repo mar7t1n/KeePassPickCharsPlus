@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using KeePass;
+using KeePass.Plugins;
+using KeePass.Util;
 using KeePassLib;
 using KeePassLib.Security;
 
@@ -10,10 +15,12 @@ namespace PickCharsPlus
     public class PickCharsForm : Form
     {
         private string _text;
+        private string _selectedFields;
         private Label _output;
         private ComboBox _fieldCombo;
         private FlowLayoutPanel _buttonsPanel;
         private PwEntry _entry;
+        private readonly IPluginHost _host;
         private int _maxFieldLength = 0;
 
         const int PanelMaxWidth = 1600;
@@ -23,33 +30,57 @@ namespace PickCharsPlus
 
         const int ButtonPadding = 4;
 
-        public PickCharsForm(PwEntry entry = null)
+        public PickCharsForm(IPluginHost host, PwEntry entry = null)
         {
+            _host = host;
             _entry = entry;
 
+            // Panels 
+            var panelComboSelector = new Panel { Dock = DockStyle.Top, Height = 50, Padding = new Padding(20, 15, 20, 0) };
+            var panelPhoneticDisaply = new Panel { Dock = DockStyle.Bottom, Height = 50, Padding = new Padding(20, 15, 20, 0) };
+            _buttonsPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(20, 15, 20, 10) };
+            var panelActions = new Panel { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(20, 15, 20, 10) };
+
             // create dropdown at top-left
-            createDropDown();
+            ComboBox _fieldCombo = createDropDown();
+            panelComboSelector.Controls.Add(_fieldCombo);
 
             // initial text: prefer supplied text, otherwise read from selected dropdown field
             _text = GetFieldPlainText(_fieldCombo?.SelectedItem?.ToString() ?? "Password");
 
-            _output = new Label { Location = new Point(10, 50), AutoSize = true };
-            Controls.Add(_output);
+            _output = new Label { AutoSize = true, Dock = DockStyle.Top };
+            panelPhoneticDisaply.Controls.Add(_output);
 
-            _buttonsPanel = new FlowLayoutPanel
+
+            var copyButton = new Button
             {
-                Location = new Point(10, 80),
-                Width = ClientSize.Width - 20,
-                Height = ClientSize.Height - 80,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                AutoSize = true,
-                AutoScroll = false,
-                WrapContents = true
+                Text = "Copy to Clipboard",
+                Width = 200,
+                Height = 36,
+                Location = new Point(10, 7),
+                Anchor = AnchorStyles.Left | AnchorStyles.Bottom
             };
+            copyButton.Click += (s, e) => CopyToClipboard();
+            panelActions.Controls.Add(copyButton);
 
-            Controls.Add(_buttonsPanel);
+            var autoTypeButton = new Button
+            {
+                Text = "AutoType",
+                Width = 200,
+                Height = 36,
+                Location = new Point(220, 7),
+                Anchor = AnchorStyles.Left | AnchorStyles.Bottom
+            };
+            autoTypeButton.Click += (s, e) => autoTypeSelection();
+            panelActions.Controls.Add(autoTypeButton);
 
             BuildButtonsForText();
+
+            // Add panesls 
+            Controls.Add(_buttonsPanel);         // Fill FIRST
+            Controls.Add(panelPhoneticDisaply);  // Bottom 2
+            Controls.Add(panelActions);          // Bottom 1
+            Controls.Add(panelComboSelector);    // Top
 
             this.StartPosition = FormStartPosition.CenterParent;
             this.Text = "Pick characters from " + (_entry?.Strings.Get(PwDefs.TitleField)?.ReadString() ?? "entry");
@@ -64,11 +95,11 @@ namespace PickCharsPlus
             };
         }
 
-        private void createDropDown()
+        private ComboBox createDropDown()
         {
             PwEntry entry = this._entry;
 
-            _fieldCombo = new ComboBox { Location = new Point(10, 10), DropDownStyle = ComboBoxStyle.DropDownList, Width = 260 };
+            _fieldCombo = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 260, Location = new Point(10, 7), Anchor = AnchorStyles.Left | AnchorStyles.Top };
 
             // Common fields first
             var advancedFields = new List<string> { "Password" };
@@ -99,8 +130,8 @@ namespace PickCharsPlus
             if (_fieldCombo.Items.Count > 0) _fieldCombo.SelectedIndex = 0;
             _fieldCombo.SelectedIndexChanged += FieldCombo_SelectedIndexChanged;
 
-            if (_fieldCombo.Items.Count == 1) _fieldCombo.Enabled = false;
-            Controls.Add(_fieldCombo);
+            // if (_fieldCombo.Items.Count == 1) _fieldCombo.Enabled = false;
+            return _fieldCombo;
         }
 
         private void FieldCombo_SelectedIndexChanged(object sender, EventArgs e)
@@ -108,6 +139,7 @@ namespace PickCharsPlus
             string field = _fieldCombo.SelectedItem?.ToString() ?? "Password";
             _text = GetFieldPlainText(field);
             _output.Text = string.Empty;
+            _selectedFields = string.Empty;
             BuildButtonsForText();
             setClientSize(_text.Length);
         }
@@ -168,6 +200,39 @@ namespace PickCharsPlus
             }
 
             _output.Text += Phonetics.GetPhonetic(_text[index]) + "  ";
+            _selectedFields += _text[index];
+        }
+
+        private void CopyToClipboard()
+        {
+            if (!string.IsNullOrEmpty(_selectedFields))
+            {
+
+                // Copy your string
+                ClipboardUtil.CopyAndMinimize(_selectedFields, false, _host.MainWindow, null, _host.Database);
+
+                // Start a timer to clear clipboard
+                long timeoutSeconds = Program.Config.Security.ClipboardClearAfterSeconds;
+                var timer = new System.Threading.Timer(state =>
+                {
+                    // Runs on a ThreadPool thread, need to marshal to UI thread
+                    if (Application.OpenForms.Count > 0)
+                    {
+                        Application.OpenForms[0].Invoke(new MethodInvoker(() =>
+                        {
+                            ClipboardUtil.ClearIfOwner();
+                        }));
+                    }
+                }, null, timeoutSeconds * 1000, Timeout.Infinite);
+            }
+        }
+
+        private async void autoTypeSelection()
+        {
+            if (!string.IsNullOrEmpty(_selectedFields))
+            {
+                KeePass.Util.AutoType.PerformIntoPreviousWindow(this, _entry, _host.Database, _selectedFields);
+            }
         }
 
         private void setClientSize(int fieldLength)

@@ -56,7 +56,7 @@ namespace PickCharsPlus
                     return;
                 }
 
-                using (var dlg = new PickCharsForm(entries[0]))
+                using (var dlg = new PickCharsForm(_host, entries[0]))
                 {
                     dlg.ShowDialog(_host.MainWindow);
                 }
