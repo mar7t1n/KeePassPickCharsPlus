@@ -35,15 +35,17 @@ You might use the 2nd option when a service asks you for your Best Freinds surna
 4. In the window that appears, select the secure string you want to use (Password or one of your Advanced String fields)
 5. Click the button(s) corresponding to the character positions you need.
 6. Read off the character or see the phonetics shown.
-![](./doc/Screenshot1.jpg)
 7. You can **copy to clipboard** for easy pasting into a single field. 
 Tools > Options > Security > Clipboard auto clear time applies.
 8. Or click **AutoType**. This switches to your previous window and sends the characters. This works on moset websites.
 9. When finished, close the window or press **ESC**.
 
+![](./doc/Screenshot1.jpg)
+
 ---
 
 ## Changelog
 
-v1.1 - Adds the Menu item to the Entry TOOLS button.
-v1.2 - Adds copy to clipboard and AutoType buttons.
+- v1.1 - Adds the Menu item to the Entry TOOLS button.  
+- v1.2 - Adds copy to clipboard and AutoType buttons.
+- v1.2.1 - Corrects incompatability found with another plugin which also performed an autotype.
