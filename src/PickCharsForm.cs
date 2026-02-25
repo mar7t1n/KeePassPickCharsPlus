@@ -9,6 +9,7 @@ using KeePass.Plugins;
 using KeePass.Util;
 using KeePassLib;
 using KeePassLib.Security;
+using KeePassLib.Utility;
 
 namespace PickCharsPlus
 {
@@ -42,7 +43,7 @@ namespace PickCharsPlus
             var panelActions = new Panel { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(20, 15, 20, 10) };
 
             // create dropdown at top-left
-            ComboBox _fieldCombo = createDropDown();
+            ComboBox _fieldCombo = CreateDropDown();
             panelComboSelector.Controls.Add(_fieldCombo);
 
             // initial text: prefer supplied text, otherwise read from selected dropdown field
@@ -71,7 +72,7 @@ namespace PickCharsPlus
                 Location = new Point(220, 7),
                 Anchor = AnchorStyles.Left | AnchorStyles.Bottom
             };
-            autoTypeButton.Click += (s, e) => autoTypeSelection();
+            autoTypeButton.Click += (s, e) => AutoTypeSelection();
             panelActions.Controls.Add(autoTypeButton);
 
             BuildButtonsForText();
@@ -84,7 +85,7 @@ namespace PickCharsPlus
 
             this.StartPosition = FormStartPosition.CenterParent;
             this.Text = "Pick characters from " + (_entry?.Strings.Get(PwDefs.TitleField)?.ReadString() ?? "entry");
-            setClientSize(_maxFieldLength);
+            SetClientSize(_maxFieldLength);
 
             // Allow form to receive key events before child controls
             this.KeyPreview = true;
@@ -95,7 +96,7 @@ namespace PickCharsPlus
             };
         }
 
-        private ComboBox createDropDown()
+        private ComboBox CreateDropDown()
         {
             PwEntry entry = this._entry;
 
@@ -141,7 +142,7 @@ namespace PickCharsPlus
             _output.Text = string.Empty;
             _selectedFields = string.Empty;
             BuildButtonsForText();
-            setClientSize(_text.Length);
+            SetClientSize(_text.Length);
         }
 
         private string GetFieldPlainText(string fieldName)
@@ -227,15 +228,33 @@ namespace PickCharsPlus
             }
         }
 
-        private async void autoTypeSelection()
+        private string EscapeSendKeys(string input)
+        {
+            return input
+                .Replace("{", "{{}")
+                .Replace("}", "{}}")
+                .Replace("+", "{+}")
+                .Replace("^", "{^}")
+                .Replace("%", "{%}")
+                .Replace("~", "{~}");
+        }
+
+        private void AutoTypeSelection()
         {
             if (!string.IsNullOrEmpty(_selectedFields))
             {
-                KeePass.Util.AutoType.PerformIntoPreviousWindow(this, _entry, _host.Database, _selectedFields);
+                try {
+                    string sequence = EscapeSendKeys(_selectedFields);
+                    bool result = KeePass.Util.AutoType.PerformIntoPreviousWindow(_host.MainWindow, _entry, _host.Database, sequence);
+                    if (!result)
+                    {
+                        MessageBox.Show("AutoType failed.", "AutoType Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                } catch (Exception ex) { MessageService.ShowWarning(ex); }
             }
         }
 
-        private void setClientSize(int fieldLength)
+        private void SetClientSize(int fieldLength)
         {
             int desiredWidth = Math.Min(PanelMaxWidth, Math.Max(PanelMinWidth, 80 + fieldLength * (ButtonPadding + ButtonSize)));
             this.ClientSize = new Size(desiredWidth, this.ClientSize.Height);
