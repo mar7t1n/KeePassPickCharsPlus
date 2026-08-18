@@ -256,7 +256,7 @@ namespace PickCharsPlus
 
         private void SetClientSize(int fieldLength)
         {
-            int desiredWidth = Math.Min(PanelMaxWidth, Math.Max(PanelMinWidth, 80 + fieldLength * (ButtonPadding + ButtonSize)));
+            int desiredWidth = Math.Min(PanelMaxWidth, Math.Max(PanelMinWidth, 80 + (fieldLength+1) * (ButtonPadding + ButtonSize)));
             this.ClientSize = new Size(desiredWidth, this.ClientSize.Height);
         }
 
