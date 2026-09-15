@@ -21,6 +21,7 @@ namespace PickCharsPlus
         private ComboBox _fieldCombo;
         private FlowLayoutPanel _buttonsPanel;
         private PwEntry _entry;
+        private Color _backColor = Color.LimeGreen;
         private readonly IPluginHost _host;
         private int _maxFieldLength = 0;
 
@@ -35,6 +36,9 @@ namespace PickCharsPlus
         {
             _host = host;
             _entry = entry;
+            var col = _host.MainWindow.BackColor;
+            if (col.R * 0.2126 + col.G * 0.7152 + col.B * 0.0722 < 255 / 2)
+                _backColor = Color.DarkGreen;
 
             // Panels 
             var panelComboSelector = new Panel { Dock = DockStyle.Top, Height = 50, Padding = new Padding(20, 15, 20, 0) };
@@ -196,7 +200,7 @@ namespace PickCharsPlus
             if (sender is Button btn)
             {
                 btn.Text = _text[index].ToString();
-                btn.BackColor = Color.LimeGreen;
+                btn.BackColor = _backColor;
                 btn.Font = new Font(btn.Font, FontStyle.Bold);
             }
 
@@ -256,7 +260,7 @@ namespace PickCharsPlus
 
         private void SetClientSize(int fieldLength)
         {
-            int desiredWidth = Math.Min(PanelMaxWidth, Math.Max(PanelMinWidth, 80 + (fieldLength+1) * (ButtonPadding + ButtonSize)));
+            int desiredWidth = Math.Min(PanelMaxWidth, Math.Max(PanelMinWidth, 100 + (fieldLength+1) * (ButtonPadding + ButtonSize)));
             this.ClientSize = new Size(desiredWidth, this.ClientSize.Height);
         }
 
